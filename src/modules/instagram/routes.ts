@@ -23,8 +23,6 @@ export async function instagramProviderRoutes(app: FastifyInstance) {
         token: z.string(),
       })
 
-      
-
       const payload = schema.safeParse(request.body)
 
       if (!payload.success) {
