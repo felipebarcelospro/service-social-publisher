@@ -4,6 +4,7 @@ import z from 'zod'
 
 import { FastifyInstance } from 'fastify'
 import { IgApiClient } from 'instagram-private-api'
+import { decrypt } from '../../helpers/encrypter'
 
 export async function instagramProviderRoutes(app: FastifyInstance) {
   app.route({
@@ -19,11 +20,10 @@ export async function instagramProviderRoutes(app: FastifyInstance) {
         }),
         caption: z.string(),
         comments: z.array(z.string()).optional(),
-        account: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
+        token: z.string(),
       })
+
+      
 
       const payload = schema.safeParse(request.body)
 
@@ -31,7 +31,18 @@ export async function instagramProviderRoutes(app: FastifyInstance) {
         return reply.status(400).send(payload.error.message)
       }
 
-      const { image, caption, comments, account } = payload.data
+      const { image, caption, comments, token } = payload.data
+
+      const decodedToken = decrypt(token)
+
+      if(!decodedToken) {
+        return reply.status(400).send('Invalid token')
+      }
+
+      const account = {
+        username: decodedToken.split(':')[0],
+        password: decodedToken.split(':')[1],
+      }
 
       async function login() {
         ig.state.generateDevice(account.username)

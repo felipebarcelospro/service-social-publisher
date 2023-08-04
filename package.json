@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@rocketseat/eslint-config": "^1.2.0",
+    "@types/crypto-js": "^4.1.1",
     "@types/node": "^20.3.1",
     "@types/twit": "^2.2.31",
     "eslint": "^8.43.0",
@@ -20,6 +21,7 @@
     "@slack/events-api": "^3.0.1",
     "@slack/web-api": "^6.8.1",
     "axios": "^1.4.0",
+    "crypto-js": "^4.1.1",
     "discord.js": "^14.11.0",
     "fastify": "^4.18.0",
     "instagram-private-api": "^1.45.3",

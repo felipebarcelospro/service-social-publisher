@@ -2,6 +2,7 @@ import z from 'zod'
 
 import { FastifyInstance } from 'fastify'
 import { TwitterApi } from 'twitter-api-v2'
+import { decrypt } from '../../helpers/encrypter'
 
 export async function twitterProviderRoutes(app: FastifyInstance) {
   app.route({
@@ -11,12 +12,7 @@ export async function twitterProviderRoutes(app: FastifyInstance) {
       const schema = z.object({
         caption: z.string(),
         comments: z.array(z.string()).optional(),
-        account: z.object({
-          appKey: z.string(),
-          appSecret: z.string(),
-          accessToken: z.string(),
-          accessSecret: z.string(),
-        }),
+        token: z.string(),
       })
 
       const payload = schema.safeParse(request.body)
@@ -25,9 +21,22 @@ export async function twitterProviderRoutes(app: FastifyInstance) {
         return reply.status(400).send(payload.error.message)
       }
 
-      const { caption, comments } = payload.data
+      const { caption, comments, token } = payload.data
 
-      const twitterClient = new TwitterApi(payload.data.account)
+      const decodedToken = decrypt(token)
+
+      if(!decodedToken) {
+        return reply.status(400).send('Invalid token')
+      }
+
+      const account = {
+        appKey: decodedToken.split(':')[0],
+        appSecret: decodedToken.split(':')[1],
+        accessToken: decodedToken.split(':')[2],
+        accessSecret: decodedToken.split(':')[3],
+      }
+
+      const twitterClient = new TwitterApi(account)
 
       try {
         const response = await twitterClient.v2.tweet({
